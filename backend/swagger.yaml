@@ -1,0 +1,155 @@
+openapi: 3.0.3
+info:
+  title: One Time Handshake (OTH) API Specification
+  description: Defense-grade Zero-OTP cryptographic authentication platform backend APIs.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api
+    description: Development Server
+  - url: https://api.oth-security.gov/api
+    description: Production Server
+
+paths:
+  /auth/register:
+    post:
+      summary: Register User and Bind Device Fingerprint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phoneNumber, deviceFingerprint]
+              properties:
+                phoneNumber:
+                  type: string
+                  example: "+919876543210"
+                deviceFingerprint:
+                  type: object
+                  properties:
+                    androidId:
+                      type: string
+                    installationId:
+                      type: string
+                    deviceModel:
+                      type: string
+                    publicKey:
+                      type: string
+                    fingerprintHash:
+                      type: string
+      responses:
+        '200':
+          description: User Registered and Key Bound Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  uid:
+                    type: string
+                  jwtToken:
+                    type: string
+
+  /auth/login:
+    post:
+      summary: Login via OTH Cryptographic Handshake
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [handshakeToken]
+              properties:
+                handshakeToken:
+                  type: string
+      responses:
+        '200':
+          description: Authentication Verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  sessionJwt:
+                    type: string
+
+  /handshake/generate:
+    post:
+      summary: Generate Client OTH Cryptographic Handshake Token
+      responses:
+        '200':
+          description: Handshake Token Generated
+
+  /handshake/verify:
+    post:
+      summary: Verify OTH Handshake Token Server-side
+      responses:
+        '200':
+          description: Token Verified
+
+  /qr/generate:
+    post:
+      summary: Generate Dynamic 30s Encrypted QR Code Payload
+      responses:
+        '200':
+          description: Dynamic QR Payload Generated
+
+  /qr/verify:
+    post:
+      summary: Verify QR Code Handshake Payload
+      responses:
+        '200':
+          description: QR Payload Verified
+
+  /offline/token:
+    post:
+      summary: Issue Encrypted Offline Token Vault Payload
+      responses:
+        '200':
+          description: Offline Token Vault Generated
+
+  /offline/sync:
+    post:
+      summary: Batch Sync Offline Authentications to Server
+      responses:
+        '200':
+          description: Offline Queue Synced
+
+  /history:
+    get:
+      summary: Get User Cryptographic Authentication Logs
+      responses:
+        '200':
+          description: History Logs Returned
+
+  /devices:
+    get:
+      summary: Get User Trusted Devices
+      responses:
+        '200':
+          description: Devices List Returned
+
+  /devices/{id}:
+    delete:
+      summary: Revoke Trust for Device
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device Revoked
+
+  /auth/logout-all:
+    post:
+      summary: Logout All Devices & Invalidate Keys
+      responses:
+        '200':
+          description: All Devices Logged Out

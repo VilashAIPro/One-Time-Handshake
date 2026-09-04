@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User profile matching UID
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Registered bound devices
+    match /devices/{deviceId} {
+      allow read, write: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+
+    // Cryptographic Auth Logs
+    match /authLogs/{logId} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+
+    // Trusted Devices registry
+    match /trustedDevices/{trustId} {
+      allow read, write: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    // Offline Tokens sync queue
+    match /offlineTokens/{tokenId} {
+      allow read, write: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    // Security Notifications
+    match /notifications/{notifId} {
+      allow read, update: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    // System Analytics (Admin or aggregate)
+    match /analytics/{docId} {
+      allow read: if request.auth != null;
+    }
+
+    // Threat logs
+    match /threatLogs/{threatId} {
+      allow read: if request.auth != null;
+      allow create: if true; // Allowed from backend security service
+    }
+  }
+}
