@@ -1,0 +1,42 @@
+{
+  "name": "one-time-handshake",
+  "version": "1.0.0",
+  "description": "OTH - Secure Authentication Beyond OTP",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "web",
+    "mobile",
+    "crypto",
+    "sdk/node",
+    "sdk/react"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:web": "cd web && npm run dev",
+    "dev:mobile": "cd mobile && npm start",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:web\"",
+    "build:backend": "cd backend && npm run build",
+    "build:web": "cd web && npm run build",
+    "test": "npm run test:crypto && npm run test:backend",
+    "test:crypto": "cd crypto && npm test",
+    "test:backend": "cd backend && npm test",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.2",
+    "typescript": "^5.4.5",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

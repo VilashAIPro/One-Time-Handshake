@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "One Time Handshake",
+    "slug": "one-time-handshake",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "oth",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F172A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "in.gov.oth.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "OTH needs camera access to scan QR codes for authentication",
+        "NSFaceIDUsageDescription": "OTH uses Face ID for biometric authentication"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0F172A"
+      },
+      "package": "in.gov.oth.app",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        { "cameraPermission": "Allow OTH to access camera for QR scanning" }
+      ],
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Allow OTH to use Face ID" }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

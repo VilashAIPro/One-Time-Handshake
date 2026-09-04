@@ -1,0 +1,161 @@
+version: '3.9'
+
+services:
+  # ─── Backend API ───────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: oth-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql
+      REDIS_HOST: redis
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - oth-network
+    volumes:
+      - ./backend/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ─── Web Admin Dashboard ────────────────────────────────────────
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: oth-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    networks:
+      - oth-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── MySQL Database ─────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: oth-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./backend/src/db/seeds.sql:/docker-entrypoint-initdb.d/02-seeds.sql
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+    networks:
+      - oth-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─── Redis Cache ────────────────────────────────────────────────
+  redis:
+    image: redis:7.2-alpine
+    container_name: oth-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - oth-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Nginx Reverse Proxy ────────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: oth-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - backend
+      - web
+    networks:
+      - oth-network
+
+  # ─── Redis Insight (Dev only) ───────────────────────────────────
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: oth-redis-insight
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    networks:
+      - oth-network
+    profiles:
+      - dev
+
+  # ─── phpMyAdmin (Dev only) ──────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: oth-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - mysql
+    networks:
+      - oth-network
+    profiles:
+      - dev
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  oth-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
