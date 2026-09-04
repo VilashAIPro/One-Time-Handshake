@@ -17,7 +17,7 @@
 
 **One Time Handshake (OTH)** is an offline-first, cryptographic zero-OTP authentication prototype designed to provide a secure login mechanism in environments with poor cellular connectivity, delayed SMS delivery, or network blackouts.
 
-- **Team Name**: CODESTRIX
+- **Team Name**: NGU
 - **Team Leader**: KAKU VILASH KUMAR REDDY
 - **Institute**: Prathyusha Engineering College
 - **Project Context**: Hackathon Prototype for Secure Authentication in Low-Network & Emergency Environments
@@ -518,7 +518,7 @@ To test the end-to-end functionality during a hackathon evaluation:
 
 ---
 
-## 👥 Team CODESTRIX
+## 👥 Team NGU
 
 - **Team Leader**: KAKU VILASH KUMAR REDDY
 - **Institute**: Prathyusha Engineering College
