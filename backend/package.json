@@ -61,7 +61,6 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "coverageDirectory": "coverage",
-    "testMatch": ["**/*.test.ts"],
-    "setupFilesAfterFramework": ["./src/test/setup.ts"]
+    "testMatch": ["**/*.test.ts"]
   }
 }
